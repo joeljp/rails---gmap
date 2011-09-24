@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+  <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+   <script type="text/javascript"
+src="http://maps.googleapis.com/maps/api/js?sensor=true"></script>
+   <script type="text/javascript">
+     var last_info = false;
+     var map;
+     function plot(p, name){
+        var infowindow = new google.maps.InfoWindow({content: name+"!"});
+        var path = [];
+        var vs = polies[p];
+        for(var v in vs){
+           path.push( new google.maps.LatLng(vs[v][0], vs[v][1]) );
+        } 
+
+        district = new google.maps.Polygon({
+            paths: path,
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 1,
+            fillColor: "#FF0000",
+            fillOpacity: 0.35
+        });
+        district.setMap(map);
+        google.maps.event.addListener(district, 'click', function(event) {
+                           if(last_info){last_info.close(map);}
+                           infowindow.setPosition(event.latLng);
+                           infowindow.open(map);
+                           last_info = infowindow;
+                        });
+}
+
+     function init(){
+        var latlng = new google.maps.LatLng(64.0, 3.0); //-34.397, 150.644
+        var myOptions = {
+                     zoom: 4,
+                     center: latlng,
+                     mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+     }
+   </script>
+   <style type="text/css">
+     html { height: 100% }
+     body { height: 100%; margin: 0px; padding: 0px }
+     map_canvas { height: 100% }
+   </style>
+  <title>Gmap</title>
+  <%= stylesheet_link_tag    "application" %>
+  <%= javascript_include_tag "application" %>
+  <%= csrf_meta_tags %>
+  <%= yield :head %> 
+</head>
+<body onload="init();">
+
+  <div id="map_canvas" style="position: absolute; top: 0px; left:400px; width: 650px; height: 540px; background-color: #666;"></div>
+
+<%= yield %>
+<%= yield :scripts %>
+</body>
+</html>

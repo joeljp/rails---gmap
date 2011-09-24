@@ -1,0 +1,54 @@
+<h1>Districts</h1>
+<%= link_to "Here", districts_path %>
+<table>
+  <tr>
+    <th>Knr</th>
+    <th>Knavn</th>
+    <th>Koor</th>
+    <th></th>
+    <th></th>
+  </tr>
+  <% polies = Hash.new %>
+<% @districts.each do |district| %>
+<%
+   poly = ActiveSupport::JSON::decode(district.st_asgeojson)["coordinates"][0][0].map! { |v| v = [v[1],v[0]] }   # lnglat2latlng
+%>
+  <tr>
+    <td><%= district.kno %></td>
+    <td><%= district.name %></td>
+<%
+   gon = "["
+   polies[district.kno.to_i] = Array.new
+   poly.each { |v|
+      gon = gon + ("new google.maps.LatLng(%s, %s)" % v) + ","
+      polies[district.kno.to_i].push(v)
+   }
+   gon.gsub!(/,$/,"]")
+%>
+    <td><span onclick="plot(<%= district.kno %>, '<%= district.name %>')"><%= district.name %></span></td> <!-- don't need the gon in plot(<%= gon %>, <%= district.kno %>) -->
+  </tr>
+<% end %>
+</table>
+<br />
+<%
+   polies = polies.to_json
+%>
+   <script>var polies = <%= polies.gsub(/\"/,"'") %></script>
+<%
+
+  def plot
+
+    poly = zcta.the_geom[0]
+    envelope = poly.envelope
+    
+    
+    @id = zcta.id
+    @map = Variable.new("map")
+    
+    @polygon = GPolygon.from_georuby(poly,"#000000",0,0.0,"#ff0000",0.6)
+
+    @center = GLatLng.from_georuby(envelope.center)
+    @zoom = @map.get_bounds_zoom_level(GLatLngBounds.from_georuby(envelope))
+    
+  end
+%>
